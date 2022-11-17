@@ -1,13 +1,14 @@
 use super::functor::*;
 pub trait Monad: Functor {
     fn pure(a: Self::A) -> Self;
-    fn join<B>(b: Self::T<Self::T<B>>) -> Self::T<B>;
-    fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B>
-    where
-        Self: Sized,
-    {
-        Self::join(self.fmap(f))
-    }
+    // fn join<B>(b: Self::T<Self::T<B>>) -> Self::T<B>;
+    // fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B>
+    // where
+    //     Self: Sized,
+    // {
+    //     Self::join(self.fmap(f))
+    // }
+    fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B>;
     fn then<B>(&self, b: Self::T<B>) -> Self::T<B> {
         b
     }
@@ -16,16 +17,16 @@ impl<A> Monad for Option<A> {
     fn pure(a: Self::A) -> Self {
         Some(a)
     }
-    fn join<B>(b: Self::T<Self::T<B>>) -> Self::T<B> {
-        b.flatten()
+    fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B> {
+        self.fmap(f).flatten()
     }
 }
 impl<A, E> Monad for Result<A, E> {
     fn pure(a: Self::A) -> Self {
         Ok(a)
     }
-    fn join<B>(b: Self::T<Self::T<B>>) -> Self::T<B> {
-        b?
+    fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B> {
+        self.fmap(f)?
     }
 }
 #[cfg(test)]
