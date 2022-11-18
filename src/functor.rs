@@ -1,19 +1,19 @@
-pub trait Functor {
+pub trait Functor<'a> {
     type A;
     type T<B>;
-    fn fmap<B, F: Fn(Self::A) -> B>(self, f: F) -> Self::T<B>;
+    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B>;
 }
-impl<A> Functor for Option<A> {
+impl<'a, A> Functor<'a> for Option<A> {
     type A = A;
     type T<B> = Option<B>;
-    fn fmap<B, F: Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
+    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
         self.map(|a| f(a))
     }
 }
-impl<A, E> Functor for Result<A, E> {
+impl<'a, A, E> Functor<'a> for Result<A, E> {
     type A = A;
     type T<B> = Result<B, E>;
-    fn fmap<B, F: Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
+    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
         self.map(|a| f(a))
     }
 }
