@@ -4,9 +4,9 @@ trait Morphism {
     type B;
 }
 trait Category {
-    type M<'a, A: 'a, B: 'a>: Morphism;
-    fn id<'a, T: 'a>() -> Self::M<'a, T, T>;
-    fn compose<'a, A: 'a, B: 'a, C: 'a>(
+    type M<'a, A: 'a, B: 'a>: Morphism + 'a;
+    fn id<'a, T: 'a + Copy>() -> Self::M<'a, T, T>;
+    fn compose<'a, A: 'a + Copy, B: 'a + Copy, C: 'a + Copy>(
         f: Self::M<'a, A, B>,
         g: Self::M<'a, B, C>,
     ) -> Self::M<'a, A, C>;
@@ -30,16 +30,46 @@ struct Set;
 
 impl Category for Set {
     type M<'a, A: 'a, B: 'a> = Function<'a, A, B>;
-    fn id<'a, T: 'a>() -> Self::M<'a, T, T> {
+    fn id<'a, T: 'a + Copy>() -> Self::M<'a, T, T> {
         Function::new(|a| a)
     }
-    fn compose<'a, A: 'a, B: 'a, C: 'a>(
+    fn compose<'a, A: 'a + Copy, B: 'a + Copy, C: 'a + Copy>(
         f: Self::M<'a, A, B>,
         g: Self::M<'a, B, C>,
     ) -> Self::M<'a, A, C> {
         Function::new(move |a| g.run(f.run(a)))
     }
 }
+// use super::monad::Monad;
+// use super::state::MState;
+// struct KleisiliArrow<'a, A, B, S>(Box<dyn 'a + Fn(A) -> MState<'a, B, S>>);
+// impl<'a, A, B, S> KleisiliArrow<'a, A, B, S> {
+//     fn new<F: Fn(A) -> MState<'a, B, S> + 'a>(f: F) -> Self {
+//         KleisiliArrow(Box::new(f))
+//     }
+//     fn run(&self, a: A) -> MState<'a, B, S> {
+//         self.0(a)
+//     }
+// }
+// impl<'a, A, B, S> Morphism for KleisiliArrow<'a, A, B, S> {
+//     type A = A;
+//     type B = MState<'a, B, S>;
+// }
+
+// struct Kleisili<S>(std::marker::PhantomData<S>);
+// impl<S: 'static> Category for Kleisili<S> {
+//     type M<'a, A: 'a, B: 'a> = KleisiliArrow<'a, A, B, S>;
+//     fn id<'a, T: 'a + Copy>() -> Self::M<'a, T, T> {
+//         KleisiliArrow::new(|a| MState::<'a, T, S>::pure(a))
+//     }
+//     // error[E0507]: cannot move out of `g`, a captured variable in an `Fn` closure
+//     fn compose<'a, A: 'a + Copy, B: 'a + Copy, C: 'a + Copy>(
+//         f: Self::M<'a, A, B>,
+//         g: Self::M<'a, B, C>,
+//     ) -> Self::M<'a, A, C> {
+//         KleisiliArrow::new(move |a| f.run(a).bind(move |b| g.run(b)))
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
