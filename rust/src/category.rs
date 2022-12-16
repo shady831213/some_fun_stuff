@@ -4,7 +4,7 @@ trait Morphism {
     type B;
 }
 trait Category {
-    type M<'a, A: 'a, B: 'a>: Morphism<A = A, B = B>;
+    type M<'a, A: 'a, B: 'a>: Morphism;
     fn id<'a, T: 'a>() -> Self::M<'a, T, T>;
     fn compose<'a, A: 'a, B: 'a, C: 'a>(
         f: Self::M<'a, A, B>,
