@@ -1,31 +1,32 @@
 use super::functor::*;
-pub trait Monad<'a>: Functor<'a> {
-    fn pure(a: Self::A) -> Self;
-    // fn join<B>(b: Self::T<Self::T<B>>) -> Self::T<B>;
-    // fn bind<B, F: Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B>
-    // where
-    //     Self: Sized,
-    // {
-    //     Self::join(self.fmap(f))
-    // }
-    fn bind<B, F: 'a + Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B>;
-    fn then<B>(&self, b: Self::T<B>) -> Self::T<B> {
+pub trait Monad<'a, A>: Functor<'a, A> {
+    fn pure(a: A) -> Self;
+    fn bind<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> Self::F<B> + 'a;
+    fn then<B>(&self, b: Self::F<B>) -> Self::F<B> {
         b
     }
 }
-impl<'a, A> Monad<'a> for Option<A> {
-    fn pure(a: Self::A) -> Self {
+impl<'a, A> Monad<'a, A> for Option<A> {
+    fn pure(a: A) -> Self {
         Some(a)
     }
-    fn bind<B, F: 'a + Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B> {
+    fn bind<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> Self::F<B> + 'a,
+    {
         self.fmap(f).flatten()
     }
 }
-impl<'a, A, E> Monad<'a> for Result<A, E> {
-    fn pure(a: Self::A) -> Self {
+impl<'a, A, E> Monad<'a, A> for Result<A, E> {
+    fn pure(a: A) -> Self {
         Ok(a)
     }
-    fn bind<B, F: 'a + Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B> {
+    fn bind<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> Self::F<B> + 'a,
+    {
         self.fmap(f)?
     }
 }

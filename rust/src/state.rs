@@ -25,10 +25,12 @@ impl<'a, A, S> MState<'a, A, S> {
     }
 }
 
-impl<'a, A: 'a, S: 'a> Functor<'a> for MState<'a, A, S> {
-    type A = A;
-    type T<B> = MState<'a, B, S>;
-    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
+impl<'a, A: 'a, S: 'a> Functor<'a, A> for MState<'a, A, S> {
+    type F<B> = MState<'a, B, S>;
+    fn fmap<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> B + 'a,
+    {
         MState::new(move |s| {
             let (a, s) = self.run(s);
             (f(a), s)
@@ -36,11 +38,14 @@ impl<'a, A: 'a, S: 'a> Functor<'a> for MState<'a, A, S> {
     }
 }
 
-impl<'a, A: 'a + Copy, S: 'a> Monad<'a> for MState<'a, A, S> {
-    fn pure(a: Self::A) -> Self {
+impl<'a, A: 'a + Copy, S: 'a> Monad<'a, A> for MState<'a, A, S> {
+    fn pure(a: A) -> Self {
         MState::new(move |s| (a, s))
     }
-    fn bind<B, F: 'a + Fn(Self::A) -> Self::T<B>>(self, f: F) -> Self::T<B> {
+    fn bind<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> Self::F<B> + 'a,
+    {
         MState::new(move |s| {
             let (a, s) = self.run(s);
             f(a).run(s)

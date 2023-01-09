@@ -1,19 +1,24 @@
-pub trait Functor<'a> {
-    type A;
-    type T<B>;
-    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B>;
+pub trait Functor<'a, A> {
+    type F<B>;
+    fn fmap<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> B + 'a;
 }
-impl<'a, A> Functor<'a> for Option<A> {
-    type A = A;
-    type T<B> = Option<B>;
-    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
+impl<'a, A> Functor<'a, A> for Option<A> {
+    type F<B> = Option<B>;
+    fn fmap<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> B + 'a,
+    {
         self.map(|a| f(a))
     }
 }
-impl<'a, A, E> Functor<'a> for Result<A, E> {
-    type A = A;
-    type T<B> = Result<B, E>;
-    fn fmap<B, F: 'a + Fn(Self::A) -> B>(self, f: F) -> Self::T<B> {
+impl<'a, A, E> Functor<'a, A> for Result<A, E> {
+    type F<B> = Result<B, E>;
+    fn fmap<B, F>(self, f: F) -> Self::F<B>
+    where
+        F: Copy + Fn(A) -> B + 'a,
+    {
         self.map(|a| f(a))
     }
 }
@@ -22,7 +27,7 @@ mod tests {
     use super::*;
     #[test]
     fn functor_test() {
-        let r = Some(1).fmap(|i| i.to_string()).fmap(|i| Some(i));
+        let r = Some(1).fmap(|i: usize| i.to_string()).fmap(|i| Some(i));
         println!("{:?}", r);
     }
 }
