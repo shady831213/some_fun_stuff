@@ -1,17 +1,15 @@
 // category-theory-for-programmers challenge 1.4
-// No way to impl Kleisili Category...
-trait Morphism<A, B> {
-    type Eval;
-    type Output<G: Copy + Morphism<B, C>, C>;
-    // fn id<T>() -> Self::M<T, T>;
+trait Morphism<'a, A, B> {
+    type Eval<T>;
+    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: Morphism<B, C> + Copy;
-    fn eval(self, a: A) -> Self::Eval;
+        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy;
+    fn eval(self, a: A) -> Self::Eval<B>;
 }
-trait Category {
-    type M<T: Copy>: Morphism<T, T> + Copy;
-    fn id<T: Copy>() -> Self::M<T>;
+trait Category<'a> {
+    type M<T: Copy + 'a>: Morphism<'a, T, T> + Copy;
+    fn id<T: Copy + 'a>() -> Self::M<T>;
 }
 #[derive(Copy, Clone)]
 struct Function<A, B, F: Fn(A) -> B + Copy> {
@@ -28,66 +26,112 @@ impl<A, B, F: Fn(A) -> B + Copy> Function<A, B, F> {
     }
 }
 
-impl<A: Copy, B: Copy, F: Fn(A) -> B + Copy> Morphism<A, B> for Function<A, B, F> {
-    type Eval = B;
-    type Output<G: Copy + Morphism<B, C>, C> =
-        Function<A, <G as Morphism<B, C>>::Eval, impl Fn(A) -> <G as Morphism<B, C>>::Eval + Copy>;
+impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> B + Copy + 'a> Morphism<'a, A, B>
+    for Function<A, B, F>
+{
+    type Eval<T> = T;
+    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+        Function<A, C, impl Fn(A) -> C + Copy + 'a>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: Morphism<B, C> + Copy,
+        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
     {
         Function::new(move |a| g.eval(self.eval(a)))
     }
-    fn eval(self, a: A) -> Self::Eval {
+    fn eval(self, a: A) -> Self::Eval<B> {
         (self.f)(a)
     }
 }
 
 struct Set;
-impl Category for Set {
-    type M<T: Copy> = Function<T, T, impl Fn(T) -> T + Copy>;
-    fn id<T: Copy>() -> Self::M<T> {
+impl<'a> Category<'a> for Set {
+    type M<T: Copy + 'a> = Function<T, T, impl Fn(T) -> T + Copy + 'a>;
+    fn id<T: Copy + 'a>() -> Self::M<T> {
         Function::new(move |a: T| a)
     }
 }
 
-// use super::monad::Monad;
-// #[derive(Copy, Clone)]
-// struct KleisiliArrow<A, B, M: for<'a> Monad<'a, B>, F: Fn(A) -> M + Copy> {
-//     f: F,
-//     _marker: std::marker::PhantomData<(A, B, M)>,
-// }
+use super::monad::*;
+#[derive(Copy, Clone)]
+struct OptionKleisiliArrow<A, B, F: Fn(A) -> Option<B> + Copy> {
+    f: F,
+    _marker: std::marker::PhantomData<(A, B)>,
+}
 
-// impl<A, B, M: for<'a> Monad<'a, B>, F: Fn(A) -> M + Copy> KleisiliArrow<A, B, M, F> {
-//     fn new(f: F) -> Self {
-//         KleisiliArrow {
-//             f,
-//             _marker: std::marker::PhantomData,
-//         }
-//     }
-// }
+impl<A, B, F: Fn(A) -> Option<B> + Copy> OptionKleisiliArrow<A, B, F> {
+    fn new(f: F) -> Self {
+        OptionKleisiliArrow {
+            f,
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
 
-// impl<A, B, M: for<'a> Monad<'a, B>, F: Fn(A) -> M + Copy> Morphism<A, B>
-//     for KleisiliArrow<A, B, M, F>
-// {
-//     type Eval = M;
-//     type Output<G: Copy + Morphism<B, C>, C> = KleisiliArrow<
-//         A,
-//         C,
-//         <G as Morphism<B, C>>::Eval,
-//         impl Fn(A) -> <G as Morphism<B, C>>::Eval + Copy,
-//     >;
-//     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
-//     where
-//         G: Morphism<B, C> + Copy,
-//     {
-//         KleisiliArrow::new(move |a| self.eval(a).bind(|b| g.eval(b)))
-//     }
-//     fn eval(self, a: A) -> Self::Eval {
-//         (self.f)(a)
-//     }
-// }
+impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> Option<B> + Copy + 'a> Morphism<'a, A, B>
+    for OptionKleisiliArrow<A, B, F>
+{
+    type Eval<T> = Option<T>;
+    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+        OptionKleisiliArrow<A, C, impl Fn(A) -> Option<C> + Copy + 'a>;
+    fn compose<G, C>(self, g: G) -> Self::Output<G, C>
+    where
+        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
+    {
+        OptionKleisiliArrow::new(move |a| self.eval(a).bind(|b| g.eval(b)))
+    }
+    fn eval(self, a: A) -> Self::Eval<B> {
+        (self.f)(a)
+    }
+}
 
+struct OptionKleisili;
+impl<'a> Category<'a> for OptionKleisili {
+    type M<T: Copy + 'a> = OptionKleisiliArrow<T, T, impl Fn(T) -> Option<T> + Copy + 'a>;
+    fn id<T: Copy + 'a>() -> Self::M<T> {
+        OptionKleisiliArrow::new(move |a: T| Option::pure(a))
+    }
+}
+use super::state::*;
+#[derive(Copy, Clone)]
+struct StateKleisiliArrow<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> {
+    f: F,
+    _marker: std::marker::PhantomData<(A, B, S)>,
+}
+
+impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> StateKleisiliArrow<'a, A, B, S, F> {
+    fn new(f: F) -> Self {
+        StateKleisiliArrow {
+            f,
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<'a, A: Copy + 'a, B: Copy + 'a, S: Copy + 'a, F: Fn(A) -> MState<'a, B, S> + Copy + 'a>
+    Morphism<'a, A, B> for StateKleisiliArrow<'a, A, B, S, F>
+{
+    type Eval<T> = MState<'a, T, S>;
+    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+        StateKleisiliArrow<'a, A, C, S, impl Fn(A) -> MState<'a, C, S> + Copy>;
+    fn compose<G, C>(self, g: G) -> Self::Output<G, C>
+    where
+        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
+    {
+        StateKleisiliArrow::new(move |a| self.eval(a).bind(move |b| g.eval(b)))
+    }
+    fn eval(self, a: A) -> Self::Eval<B> {
+        (self.f)(a)
+    }
+}
+
+struct StateKleisili<S>(std::marker::PhantomData<S>);
+impl<'a, S: Copy + 'a> Category<'a> for StateKleisili<S> {
+    type M<T: Copy + 'a> =
+        StateKleisiliArrow<'a, T, T, S, impl Fn(T) -> MState<'a, T, S> + Copy + 'a>;
+    fn id<T: Copy + 'a>() -> Self::M<T> {
+        StateKleisiliArrow::new(move |a: T| MState::pure(a))
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
