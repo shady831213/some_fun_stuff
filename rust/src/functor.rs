@@ -1,11 +1,13 @@
-pub trait Functor<'a, A> {
-    type F<B>;
+use super::HGT;
+pub trait Functor<'a, A>: HGT {
     fn fmap<B, F>(self, f: F) -> Self::F<B>
     where
         F: Copy + Fn(A) -> B + 'a;
 }
+impl<A> HGT for Option<A> {
+    type F<T> = Option<T>;
+}
 impl<'a, A> Functor<'a, A> for Option<A> {
-    type F<B> = Option<B>;
     fn fmap<B, F>(self, f: F) -> Self::F<B>
     where
         F: Copy + Fn(A) -> B + 'a,
@@ -13,8 +15,10 @@ impl<'a, A> Functor<'a, A> for Option<A> {
         self.map(|a| f(a))
     }
 }
+impl<A, E> HGT for Result<A, E> {
+    type F<T> = Result<T, E>;
+}
 impl<'a, A, E> Functor<'a, A> for Result<A, E> {
-    type F<B> = Result<B, E>;
     fn fmap<B, F>(self, f: F) -> Self::F<B>
     where
         F: Copy + Fn(A) -> B + 'a,

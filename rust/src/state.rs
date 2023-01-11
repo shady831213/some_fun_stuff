@@ -1,5 +1,6 @@
 use super::functor::*;
 use super::monad::*;
+use super::HGT;
 pub struct MState<'a, A, S> {
     pub run: Box<dyn 'a + Fn(S) -> (A, S)>,
 }
@@ -25,8 +26,11 @@ impl<'a, A, S> MState<'a, A, S> {
     }
 }
 
-impl<'a, A: 'a, S: 'a> Functor<'a, A> for MState<'a, A, S> {
+impl<'a, A, S> HGT for MState<'a, A, S> {
     type F<B> = MState<'a, B, S>;
+}
+
+impl<'a, A: 'a, S: 'a> Functor<'a, A> for MState<'a, A, S> {
     fn fmap<B, F>(self, f: F) -> Self::F<B>
     where
         F: Copy + Fn(A) -> B + 'a,

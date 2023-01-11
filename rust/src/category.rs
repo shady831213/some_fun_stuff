@@ -1,11 +1,11 @@
+use super::HGT;
 // category-theory-for-programmers challenge 1.4
-trait Morphism<'a, A, B> {
-    type Eval<T>;
-    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C>;
+trait Morphism<'a, A, B>: HGT {
+    type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy;
-    fn eval(self, a: A) -> Self::Eval<B>;
+        G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy;
+    fn eval(self, a: A) -> Self::F<B>;
 }
 trait Category<'a> {
     type M<T: Copy + 'a>: Morphism<'a, T, T> + Copy;
@@ -25,20 +25,22 @@ impl<A, B, F: Fn(A) -> B + Copy> Function<A, B, F> {
         }
     }
 }
+impl<A, B, F: Fn(A) -> B + Copy> HGT for Function<A, B, F> {
+    type F<T> = T;
+}
 
 impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> B + Copy + 'a> Morphism<'a, A, B>
     for Function<A, B, F>
 {
-    type Eval<T> = T;
-    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+    type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C> =
         Function<A, C, impl Fn(A) -> C + Copy + 'a>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
+        G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy,
     {
         Function::new(move |a| g.eval(self.eval(a)))
     }
-    fn eval(self, a: A) -> Self::Eval<B> {
+    fn eval(self, a: A) -> Self::F<B> {
         (self.f)(a)
     }
 }
@@ -67,19 +69,22 @@ impl<A, B, F: Fn(A) -> Option<B> + Copy> OptionKleisiliArrow<A, B, F> {
     }
 }
 
+impl<A, B, F: Fn(A) -> Option<B> + Copy> HGT for OptionKleisiliArrow<A, B, F> {
+    type F<T> = Option<T>;
+}
+
 impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> Option<B> + Copy + 'a> Morphism<'a, A, B>
     for OptionKleisiliArrow<A, B, F>
 {
-    type Eval<T> = Option<T>;
-    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+    type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C> =
         OptionKleisiliArrow<A, C, impl Fn(A) -> Option<C> + Copy + 'a>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
+        G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy,
     {
         OptionKleisiliArrow::new(move |a| self.eval(a).bind(|b| g.eval(b)))
     }
-    fn eval(self, a: A) -> Self::Eval<B> {
+    fn eval(self, a: A) -> Self::F<B> {
         (self.f)(a)
     }
 }
@@ -107,19 +112,22 @@ impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> StateKleisiliArrow<'a, A,
     }
 }
 
+impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> HGT for StateKleisiliArrow<'a, A, B, S, F> {
+    type F<T> = MState<'a, T, S>;
+}
+
 impl<'a, A: Copy + 'a, B: Copy + 'a, S: Copy + 'a, F: Fn(A) -> MState<'a, B, S> + Copy + 'a>
     Morphism<'a, A, B> for StateKleisiliArrow<'a, A, B, S, F>
 {
-    type Eval<T> = MState<'a, T, S>;
-    type Output<G: 'a + Copy + Morphism<'a, B, C, Eval<C> = Self::Eval<C>>, C> =
+    type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C> =
         StateKleisiliArrow<'a, A, C, S, impl Fn(A) -> MState<'a, C, S> + Copy>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
-        G: 'a + Morphism<'a, B, C, Eval<C> = Self::Eval<C>> + Copy,
+        G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy,
     {
         StateKleisiliArrow::new(move |a| self.eval(a).bind(move |b| g.eval(b)))
     }
-    fn eval(self, a: A) -> Self::Eval<B> {
+    fn eval(self, a: A) -> Self::F<B> {
         (self.f)(a)
     }
 }

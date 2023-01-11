@@ -1,5 +1,6 @@
 use super::functor::*;
-pub trait Monad<'a, A>: Functor<'a, A> {
+use super::HGT;
+pub trait Monad<'a, A>: HGT {
     fn pure(a: A) -> Self;
     fn bind<B, F>(self, f: F) -> Self::F<B>
     where
