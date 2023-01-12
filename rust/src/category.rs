@@ -55,89 +55,89 @@ impl<'a> Category<'a> for Set {
 
 use super::monad::*;
 #[derive(Copy, Clone)]
-struct OptionKleisiliArrow<A, B, F: Fn(A) -> Option<B> + Copy> {
+struct OptionKleisliArrow<A, B, F: Fn(A) -> Option<B> + Copy> {
     f: F,
     _marker: std::marker::PhantomData<(A, B)>,
 }
 
-impl<A, B, F: Fn(A) -> Option<B> + Copy> OptionKleisiliArrow<A, B, F> {
+impl<A, B, F: Fn(A) -> Option<B> + Copy> OptionKleisliArrow<A, B, F> {
     fn new(f: F) -> Self {
-        OptionKleisiliArrow {
+        OptionKleisliArrow {
             f,
             _marker: std::marker::PhantomData,
         }
     }
 }
 
-impl<A, B, F: Fn(A) -> Option<B> + Copy> HGT for OptionKleisiliArrow<A, B, F> {
+impl<A, B, F: Fn(A) -> Option<B> + Copy> HGT for OptionKleisliArrow<A, B, F> {
     type F<T> = Option<T>;
 }
 
 impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> Option<B> + Copy + 'a> Morphism<'a, A, B>
-    for OptionKleisiliArrow<A, B, F>
+    for OptionKleisliArrow<A, B, F>
 {
     type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C> =
-        OptionKleisiliArrow<A, C, impl Fn(A) -> Option<C> + Copy + 'a>;
+        OptionKleisliArrow<A, C, impl Fn(A) -> Option<C> + Copy + 'a>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
         G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy,
     {
-        OptionKleisiliArrow::new(move |a| self.eval(a).bind(|b| g.eval(b)))
+        OptionKleisliArrow::new(move |a| self.eval(a).bind(|b| g.eval(b)))
     }
     fn eval(self, a: A) -> Self::F<B> {
         (self.f)(a)
     }
 }
 
-struct OptionKleisili;
-impl<'a> Category<'a> for OptionKleisili {
-    type M<T: Copy + 'a> = OptionKleisiliArrow<T, T, impl Fn(T) -> Option<T> + Copy + 'a>;
+struct OptionKleisli;
+impl<'a> Category<'a> for OptionKleisli {
+    type M<T: Copy + 'a> = OptionKleisliArrow<T, T, impl Fn(T) -> Option<T> + Copy + 'a>;
     fn id<T: Copy + 'a>() -> Self::M<T> {
-        OptionKleisiliArrow::new(move |a: T| Option::pure(a))
+        OptionKleisliArrow::new(move |a: T| Option::pure(a))
     }
 }
 use super::state::*;
 #[derive(Copy, Clone)]
-struct StateKleisiliArrow<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> {
+struct StateKleisliArrow<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> {
     f: F,
     _marker: std::marker::PhantomData<(A, B, S)>,
 }
 
-impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> StateKleisiliArrow<'a, A, B, S, F> {
+impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> StateKleisliArrow<'a, A, B, S, F> {
     fn new(f: F) -> Self {
-        StateKleisiliArrow {
+        StateKleisliArrow {
             f,
             _marker: std::marker::PhantomData,
         }
     }
 }
 
-impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> HGT for StateKleisiliArrow<'a, A, B, S, F> {
+impl<'a, A, B, S, F: Fn(A) -> MState<'a, B, S> + Copy> HGT for StateKleisliArrow<'a, A, B, S, F> {
     type F<T> = MState<'a, T, S>;
 }
 
 impl<'a, A: Copy + 'a, B: Copy + 'a, S: Copy + 'a, F: Fn(A) -> MState<'a, B, S> + Copy + 'a>
-    Morphism<'a, A, B> for StateKleisiliArrow<'a, A, B, S, F>
+    Morphism<'a, A, B> for StateKleisliArrow<'a, A, B, S, F>
 {
     type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C> =
-        StateKleisiliArrow<'a, A, C, S, impl Fn(A) -> MState<'a, C, S> + Copy>;
+        StateKleisliArrow<'a, A, C, S, impl Fn(A) -> MState<'a, C, S> + Copy>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
         G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy,
     {
-        StateKleisiliArrow::new(move |a| self.eval(a).bind(move |b| g.eval(b)))
+        StateKleisliArrow::new(move |a| self.eval(a).bind(move |b| g.eval(b)))
     }
     fn eval(self, a: A) -> Self::F<B> {
         (self.f)(a)
     }
 }
 
-struct StateKleisili<S>(std::marker::PhantomData<S>);
-impl<'a, S: Copy + 'a> Category<'a> for StateKleisili<S> {
+struct StateKleisli<S>(std::marker::PhantomData<S>);
+impl<'a, S: Copy + 'a> Category<'a> for StateKleisli<S> {
     type M<T: Copy + 'a> =
-        StateKleisiliArrow<'a, T, T, S, impl Fn(T) -> MState<'a, T, S> + Copy + 'a>;
+        StateKleisliArrow<'a, T, T, S, impl Fn(T) -> MState<'a, T, S> + Copy + 'a>;
     fn id<T: Copy + 'a>() -> Self::M<T> {
-        StateKleisiliArrow::new(move |a: T| MState::pure(a))
+        StateKleisliArrow::new(move |a: T| MState::pure(a))
     }
 }
 #[cfg(test)]
