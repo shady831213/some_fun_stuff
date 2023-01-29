@@ -4,5 +4,6 @@ pub trait HGT {
 }
 mod category;
 mod functor;
+mod memorize;
 mod monad;
 pub mod state;

@@ -1,24 +1,24 @@
 use super::HGT;
 // category-theory-for-programmers challenge 1.4
-trait Morphism<'a, A, B>: HGT {
+pub trait Morphism<'a, A, B>: HGT {
     type Output<G: 'a + Copy + Morphism<'a, B, C, F<C> = Self::F<C>>, C>;
     fn compose<G, C>(self, g: G) -> Self::Output<G, C>
     where
         G: 'a + Morphism<'a, B, C, F<C> = Self::F<C>> + Copy;
     fn eval(self, a: A) -> Self::F<B>;
 }
-trait Category<'a> {
+pub trait Category<'a> {
     type M<T: Copy + 'a>: Morphism<'a, T, T> + Copy;
     fn id<T: Copy + 'a>() -> Self::M<T>;
 }
 #[derive(Copy, Clone)]
-struct Function<A, B, F: Fn(A) -> B + Copy> {
+pub struct Function<A, B, F: Fn(A) -> B + Copy> {
     f: F,
     _marker: std::marker::PhantomData<(A, B)>,
 }
 
 impl<A, B, F: Fn(A) -> B + Copy> Function<A, B, F> {
-    fn new(f: F) -> Self {
+    pub fn new(f: F) -> Self {
         Function {
             f,
             _marker: std::marker::PhantomData,
@@ -45,7 +45,7 @@ impl<'a, A: Copy + 'a, B: Copy + 'a, F: Fn(A) -> B + Copy + 'a> Morphism<'a, A, 
     }
 }
 
-struct Set;
+pub struct Set;
 impl<'a> Category<'a> for Set {
     type M<T: Copy + 'a> = Function<T, T, impl Fn(T) -> T + Copy + 'a>;
     fn id<T: Copy + 'a>() -> Self::M<T> {
