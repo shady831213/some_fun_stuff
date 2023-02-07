@@ -1,20 +1,19 @@
 -- category-theory-for-programmers challenge 3.6
 module FreeCat where
 import Control.Category
-newtype Node = Node String
 
-data SingleNodeCat a b = SingleNodeCat Node
-singleNodeCatObj :: SingleNodeCat a b
-singleNodeCatObj = SingleNodeCat(Node "")
+data SingleNodeCat = SingleNodeCat
 
-instance Category SingleNodeCat where
-    id = singleNodeCatObj
+data SingleNodeCatArrow a b = SingleNodeCatArrow(SingleNodeCat -> SingleNodeCat)
+signleNodeId::SingleNodeCat -> SingleNodeCat
+signleNodeId o = o
+instance Category SingleNodeCatArrow where
+    id = SingleNodeCatArrow(signleNodeId)
     (.) _ _ = undefined
 
-data SingleNodeSingleArrowCat a b = SingleNodeSingleArrowCat Node
-singleNodeSingleArrowCatObj :: SingleNodeSingleArrowCat a b
-singleNodeSingleArrowCatObj = SingleNodeSingleArrowCat(Node "")
 
-instance Category SingleNodeSingleArrowCat where
-    id = singleNodeSingleArrowCatObj
-    (.) _ _ = singleNodeSingleArrowCatObj
+-- data SingleNodeSingleArrow a b = SingleNodeSingleArrow(SingleNodeCat, SingleNodeCat)
+
+-- instance Category SingleNodeSingleArrow where
+--     id = SingleNodeCatId(SingleNodeCat, SingleNodeCat)
+--     (.) _ _ = SingleNodeSingleArrow(SingleNodeCat, SingleNodeCat)
