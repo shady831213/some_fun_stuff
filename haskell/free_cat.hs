@@ -1,36 +1,41 @@
--- category-theory-for-programmers challenge 3.6
+-- category-theory-for-programmers challenge 3.6SingleNodeCat
 module FreeCat where
 import Control.Category
 
-data SingleNodeCat = SingleNodeCat
+data SingleNodeCatObj = SingleNodeCatObj
 
-data SingleNodeCatArrow a b = SingleNodeCatArrow(SingleNodeCat, SingleNodeCat, Integer)
+data SingleNodeCatArrow a b = SingleNodeCatId
+singleNodeCatEval :: SingleNodeCatObj -> SingleNodeCatArrow a b -> SingleNodeCatObj
+singleNodeCatEval _ _ = SingleNodeCatObj
 
 instance Category SingleNodeCatArrow where
-    id = SingleNodeCatArrow(SingleNodeCat, SingleNodeCat, 0)
+    id = SingleNodeCatId
     (.) _ _ = undefined
 
 
 
-data SingleNodeSingleArrowCatArrow a b = SingleNodeSingleArrowCatArrow(SingleNodeCat, SingleNodeCat, Integer)
-singleNodeSingleArrowCatArrowStart :: SingleNodeSingleArrowCatArrow a b -> SingleNodeCat
-singleNodeSingleArrowCatArrowStart (SingleNodeSingleArrowCatArrow(s, _, _)) = s
-singleNodeSingleArrowCatArrowEnd::SingleNodeSingleArrowCatArrow a b -> SingleNodeCat
-singleNodeSingleArrowCatArrowEnd (SingleNodeSingleArrowCatArrow(_, e, _)) = e
-singleNodeSingleArrowCatArrowId::SingleNodeSingleArrowCatArrow a b -> Integer
-singleNodeSingleArrowCatArrowId (SingleNodeSingleArrowCatArrow(_, _, i)) = i
+data SingleNodeSingleArrowCatArrow a b = SingleNodeSingleArrowCatId | SingleNodeSingleArrowCatArrow
+singleNodeSingleArrowCatEval :: SingleNodeCatObj -> SingleNodeSingleArrowCatArrow a b -> SingleNodeCatObj
+singleNodeSingleArrowCatEval _ _ = SingleNodeCatObj
 
-singleNodeSingleArrowCatId :: SingleNodeSingleArrowCatArrow a b
-singleNodeSingleArrowCatId = SingleNodeSingleArrowCatArrow(SingleNodeCat, SingleNodeCat, 0)
-
-singleNodeSingleArrowCatArrow1 :: SingleNodeSingleArrowCatArrow a b
-singleNodeSingleArrowCatArrow1 = SingleNodeSingleArrowCatArrow(SingleNodeCat, SingleNodeCat, 1)
 
 instance Category SingleNodeSingleArrowCatArrow where
-    id = singleNodeSingleArrowCatId
-    (.) a b = let   ida = singleNodeSingleArrowCatArrowId a
-                    idb = singleNodeSingleArrowCatArrowId b 
-                    in let  id = if ida > idb 
-                                    then ida 
-                                    else idb 
-                    in SingleNodeSingleArrowCatArrow(singleNodeSingleArrowCatArrowStart a, singleNodeSingleArrowCatArrowEnd b, id)
+    id = SingleNodeSingleArrowCatId
+    (.) (SingleNodeSingleArrowCatArrow) (SingleNodeSingleArrowCatId) = SingleNodeSingleArrowCatArrow
+    (.) (SingleNodeSingleArrowCatId) (SingleNodeSingleArrowCatArrow) = SingleNodeSingleArrowCatArrow
+    (.) (SingleNodeSingleArrowCatId) (SingleNodeSingleArrowCatId) = SingleNodeSingleArrowCatId
+
+
+data TwoNodeCatObj = TwoNode0 | TwoNode1
+
+data TwoNodeCatArrow a b = TwoNodeCatArrow01 | TwoNodeCatId
+twoNodeCatEval :: TwoNodeCatObj -> TwoNodeCatArrow a b -> TwoNodeCatObj
+twoNodeCatEval (TwoNode0) (TwoNodeCatArrow01) = TwoNode1
+twoNodeCatEval (TwoNode0) (TwoNodeCatId) = TwoNode0
+twoNodeCatEval (TwoNode1) (TwoNodeCatId) = TwoNode1
+
+instance Category TwoNodeCatArrow where
+    id = TwoNodeCatId
+    (.) (TwoNodeCatArrow01) (TwoNodeCatId) = TwoNodeCatArrow01
+    (.) (TwoNodeCatId) (TwoNodeCatArrow01) = TwoNodeCatArrow01
+    (.) (TwoNodeCatId) (TwoNodeCatId) = TwoNodeCatId
