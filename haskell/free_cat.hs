@@ -1,6 +1,7 @@
 -- category-theory-for-programmers challenge 3.6SingleNodeCat
 module FreeCat where
 import Control.Category
+import Data.Char
 
 data SingleNodeCatObj = SingleNodeCatObj
 
@@ -40,17 +41,16 @@ instance Category TwoNodeCatArrow where
     (.) (TwoNodeCatId) (TwoNodeCatArrow01) = TwoNodeCatArrow01
     (.) (TwoNodeCatId) (TwoNodeCatId) = TwoNodeCatId
 
-type CharNodeCatObj = Char
-data CharNodeCatArrow a b = CharNodeCatArrow(CharNodeCatObj -> CharNodeCatObj)
-charNodeCatArrowF :: CharNodeCatArrow a b -> (CharNodeCatObj -> CharNodeCatObj)
-charNodeCatArrowF (CharNodeCatArrow(f)) = f
+data SingleNodeMultiArrowCatArrow a b = SingleNodeMultiArrowCatId | SingleNodeMultiArrowCatArrow Char
+singleNodeMultiArrowCatArrowMark :: SingleNodeMultiArrowCatArrow a b -> Maybe Char
+singleNodeMultiArrowCatArrowMark (SingleNodeMultiArrowCatId) = Nothing
+singleNodeMultiArrowCatArrowMark (SingleNodeMultiArrowCatArrow m) = Just m
 
-charNodeCatId :: CharNodeCatArrow a b
-charNodeCatId = CharNodeCatArrow(\a -> a)
+singleNodeMultiArrowCatEval :: SingleNodeCatObj -> SingleNodeCatArrow a b -> SingleNodeCatObj
+singleNodeMultiArrowCatEval _ _ = SingleNodeCatObj
 
-
-instance Category CharNodeCatArrow where
-    id = charNodeCatId
-    (.) a b =   let fa = charNodeCatArrowF a
-                    fb = charNodeCatArrowF b
-                in CharNodeCatArrow(fb Prelude.. fa)
+instance Category SingleNodeMultiArrowCatArrow where
+    id = SingleNodeMultiArrowCatId
+    (.) (SingleNodeMultiArrowCatId) (SingleNodeMultiArrowCatArrow m) = SingleNodeMultiArrowCatArrow m
+    (.) (SingleNodeMultiArrowCatArrow m) (SingleNodeMultiArrowCatId) = SingleNodeMultiArrowCatArrow m
+    (.) (SingleNodeMultiArrowCatArrow m) (SingleNodeMultiArrowCatArrow n) = SingleNodeMultiArrowCatArrow (chr ((ord m + ord n) `mod` ord 'a'))
