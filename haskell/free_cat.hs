@@ -2,14 +2,11 @@
 module FreeCat where
 import Control.Category
 
-data SingleNodeCatObj a = SingleNodeCatObj
-
-instance Functor SingleNodeCatObj where
-    fmap _ _ = SingleNodeCatObj
+data SingleNodeCatObj = SingleNodeCatObj
 
 data SingleNodeCatArrow a b = SingleNodeCatId
-singleNodeCatEval :: a -> SingleNodeCatArrow a b -> SingleNodeCatObj b
-singleNodeCatEval _ _ = fmap Prelude.id SingleNodeCatObj
+singleNodeCatEval :: SingleNodeCatObj -> SingleNodeCatArrow a b -> SingleNodeCatObj
+singleNodeCatEval _ _ = SingleNodeCatObj
 
 instance Category SingleNodeCatArrow where
     id = SingleNodeCatId
@@ -18,8 +15,8 @@ instance Category SingleNodeCatArrow where
 
 
 data SingleNodeSingleArrowCatArrow a b = SingleNodeSingleArrowCatId | SingleNodeSingleArrowCatArrow
-singleNodeSingleArrowCatEval :: a -> SingleNodeSingleArrowCatArrow a b -> SingleNodeCatObj b
-singleNodeSingleArrowCatEval _ _ = fmap Prelude.id SingleNodeCatObj
+singleNodeSingleArrowCatEval :: SingleNodeCatObj -> SingleNodeSingleArrowCatArrow a b -> SingleNodeCatObj
+singleNodeSingleArrowCatEval _ _ = SingleNodeCatObj
 
 
 instance Category SingleNodeSingleArrowCatArrow where
