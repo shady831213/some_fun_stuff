@@ -39,3 +39,18 @@ instance Category TwoNodeCatArrow where
     (.) (TwoNodeCatArrow01) (TwoNodeCatId) = TwoNodeCatArrow01
     (.) (TwoNodeCatId) (TwoNodeCatArrow01) = TwoNodeCatArrow01
     (.) (TwoNodeCatId) (TwoNodeCatId) = TwoNodeCatId
+
+type CharNodeCatObj = Char
+data CharNodeCatArrow a b = CharNodeCatArrow(CharNodeCatObj -> CharNodeCatObj)
+charNodeCatArrowF :: CharNodeCatArrow a b -> (CharNodeCatObj -> CharNodeCatObj)
+charNodeCatArrowF (CharNodeCatArrow(f)) = f
+
+charNodeCatId :: CharNodeCatArrow a b
+charNodeCatId = CharNodeCatArrow(\a -> a)
+
+
+instance Category CharNodeCatArrow where
+    id = charNodeCatId
+    (.) a b =   let fa = charNodeCatArrowF a
+                    fb = charNodeCatArrowF b
+                in CharNodeCatArrow(fb Prelude.. fa)
