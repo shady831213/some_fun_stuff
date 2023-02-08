@@ -1,4 +1,4 @@
--- category-theory-for-programmers challenge 3.6SingleNodeCat
+-- category-theory-for-programmers challenge 3.6.1
 module FreeCat where
 import Control.Category
 import Data.Char
