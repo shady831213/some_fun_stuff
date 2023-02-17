@@ -13,3 +13,9 @@ j b = if b then 0 else 1
 -- so Either is "better" than Int equipped with i, j
 m:: Either Int Bool -> Int
 m = factorizer i j
+
+i':: Int -> Int
+i' n = if n < 0 then n else n + 2
+
+m':: Either Int Bool -> Int
+m' = factorizer i' j
