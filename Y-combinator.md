@@ -49,6 +49,6 @@ Y(f) = g(f.g) = (f.g)(f.g)
 
 = lambda f. (lambda x. (f.g)(x))lambda x. (f.g)(x)    // f.g = lambda x. (f.g)(x)
 
-= lambda f. (lambda x. fxx) lambdax. fxx   // g(x) = x(x)
+= lambda f. (lambda x. fxx) lambda x. fxx   // g(x) = x(x)
 ```
 这样就得到了Y combinator
