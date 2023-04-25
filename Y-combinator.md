@@ -47,10 +47,12 @@ g(f.g)为f的不动点。
 
 因为Y combinator应能求f的不动点
 ```
-Y(f) = lambda f. g(f.g) = lambda f. (f.g)(f.g)
+Y(f) = g(f.g) = (f.g)(f.g)
 
-= lambda f. (lambda x. (f.g)(x))lambda x. (f.g)(x)    // f.g = lambda x. (f.g)(x)
+= (lambda x. (f.g)(x))lambda x. (f.g)(x)    // f.g = lambda x. (f.g)(x)
 
-= lambda f. (lambda x. fxx) lambda x. fxx   // g(x) = x(x)
+= (lambda x. fxx) lambda x. fxx   // g(x) = x(x)
+
+Y = lambda f. (lambda x. fxx) lambda x. fxx
 ```
-这样就得到了Y combinator
+这样就得到了Y combinator. Ah~Ha! 
