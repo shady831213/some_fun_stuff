@@ -47,7 +47,7 @@ g(f.g)为f的不动点。
 
 因为Y combinator应能求f的不动点
 ```
-Y(f) = g(f.g) = (f.g)(f.g)
+Y(f) = lambda f. g(f.g) = lambda f. (f.g)(f.g)
 
 = lambda f. (lambda x. (f.g)(x))lambda x. (f.g)(x)    // f.g = lambda x. (f.g)(x)
 
