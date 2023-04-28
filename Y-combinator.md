@@ -1,7 +1,7 @@
 ![](https://www.ycombinator.com/packs/static/ycdc/ycombinator-logo-ee6c80faf1d1ce2491d8.png)
 
 之前一直没搞明白 [Y combinator](https://en.wikipedia.org/wiki/Fixed-point_combinator#Y_combinator)这个东西咋来的，网上也基本上查不到其推导过程，只是证明其确实可以求函数的不动点。。。
-最近主要基于[《递归函数论》](https://www.amazon.com/%E7%8E%B0%E4%BB%A3%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80%E4%B8%9B%E4%B9%A6%C2%B7%E5%85%B8%E8%97%8F%E7%89%88%EF%BC%8823%EF%BC%89%EF%BC%9A%E9%80%92%E5%BD%92%E8%AE%BA-%E8%8E%AB%E7%BB%8D%E6%8F%86/dp/B004S5C5WE)学习递归论有了一些理解，记录一下。
+最近主要基于[《递归函数论》](https://books.google.com.hk/books/about/%E9%80%92%E5%BD%92%E5%87%BD%E6%95%B0%E8%AE%BA.html?id=QaqjOAAACAAJ&redir_esc=y)学习递归论有了一些理解，记录一下。
 
 注： 这里只考虑一元函数的情况，因为有配对函数存在的函数集，多元函数均可划归为一元函数。
 
